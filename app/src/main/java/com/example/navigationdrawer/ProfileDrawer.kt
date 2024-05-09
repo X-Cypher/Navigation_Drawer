@@ -1,6 +1,5 @@
 package com.example.navigationdrawer
 
-import android.provider.ContactsContract.Profile
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
