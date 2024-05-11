@@ -81,8 +81,8 @@ class MainActivity : ComponentActivity() {
 //                    modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-//                    NavDrawer()
-                    MyBottomAppBar()
+                    NavDrawer()
+
                 }
             }
         }
@@ -95,14 +95,24 @@ class MainActivity : ComponentActivity() {
 fun NavDrawer() {
     val  navigationController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed) //remember drawer state that is if drawer is closed or open
     val context = LocalContext.current.applicationContext
 
+    val selectedItem = remember { //will use it to store the selected item and change the icon color when selected
+        mutableStateOf(Icons.Default.Home) //default selected icon
+    }
+
+    val sheetState = rememberModalBottomSheetState() //will use it to remember the state of bottom sheet
+    var showBottomSheet by remember { //will use it to show bottom sheet
+        mutableStateOf(false)
+    }
+
+//Made NAVIGATION Drawer and then connected it to all other things using scaffold
     ModalNavigationDrawer(
         drawerState = drawerState,
         gesturesEnabled = true,
         drawerContent = {
-                ModalDrawerSheet { //Navigation drawer UI
+                ModalDrawerSheet { //Navigation drawer's UI
                         Box(modifier = Modifier //header green color wala box
                             .background(Green1)
                             .fillMaxWidth()
@@ -168,60 +178,22 @@ fun NavDrawer() {
                 }
         }
     ) {
-            Scaffold (){
-                    val coroutineScope = rememberCoroutineScope()
-                    TopAppBar(
-                        title = { Text(text = "WhatsApp") },
-                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Green1, titleContentColor = Color.White, navigationIconContentColor = Color.White),
-                        navigationIcon = {
-                            IconButton(onClick = {
-                                coroutineScope.launch {
-                                    drawerState.open()
-                                }
-                            }) {
-                                Icon(Icons.Rounded.Menu, contentDescription = "Menu")
+            Scaffold (topBar = {
+                val coroutineScope = rememberCoroutineScope()
+                TopAppBar(
+                    title = { Text(text = "WhatsApp") },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Green1, titleContentColor = Color.White, navigationIconContentColor = Color.White),
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                drawerState.open()
                             }
+                        }) {
+                            Icon(Icons.Rounded.Menu, contentDescription = "Menu")
                         }
-                    )
-
-                //Navigation host : Controller of navigation
-                NavHost(navController = navigationController, startDestination = Screens.Home.screen_name) {
-                        composable(Screens.Home.screen_name) {
-                            Home()
-                        }
-                        composable(Screens.Profile.screen_name) {
-                            Profile()
-                        }
-                        composable(Screens.Settings.screen_name) {
-                            Settings()
-                        }
-                }
-            }
-    }
-}
-
-@Preview
-@Composable
-fun NavDrawerPreview() {
-    MyBottomAppBar()
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Composable
-fun MyBottomAppBar() {
-    val navigationController = rememberNavController()
-    val context = LocalContext.current.applicationContext
-    val selectedItem = remember { //will use it to store the selected item and change the icon color when selected
-        mutableStateOf(Icons.Default.Home) //default selected icon
-    }
-
-    val sheetState = rememberModalBottomSheetState() //will use it to remember the state of bottom sheet
-    var showBottomSheet by remember { //will use it to show bottom sheet
-        mutableStateOf(false)
-    }
-
-    Scaffold(bottomBar = {
+                    }
+                )
+            }, bottomBar = {
         BottomAppBar(
             containerColor = Green1,
             modifier = Modifier.fillMaxWidth(),
@@ -303,20 +275,20 @@ fun MyBottomAppBar() {
                         modifier = Modifier.size(30.dp)
                     )
                 }
-
-
             }
         )
-    }) {
-        NavHost(navController = navigationController, startDestination = Screens.Home_Bottom.screen_name) {
-            composable(Screens.Home_Bottom.screen_name){ home_bottom()}
-            composable(Screens.Search_Bottom.screen_name){ search_bottom()}
-            composable(Screens.Notifications_Bottom.screen_name){ notification_bottom()}
-            composable(Screens.Profile_Bottom.screen_name){ profile_bottom()}
-            composable(Screens.Post_Bottom.screen_name){ post_bottom()}
-        }
+    }){
+                //Navigation host : Controller of navigation
+                NavHost(navController = navigationController, startDestination = Screens.Home_Bottom.screen_name) {
+                    composable(Screens.Settings.screen_name){ Settings()}
+                    composable(Screens.Home_Bottom.screen_name){ home_bottom()}
+                    composable(Screens.Search_Bottom.screen_name){ search_bottom()}
+                    composable(Screens.Notifications_Bottom.screen_name){ notification_bottom()}
+                    composable(Screens.Profile_Bottom.screen_name){ profile_bottom()}
+                    composable(Screens.Post_Bottom.screen_name){ post_bottom()}
+                }
+            }
     }
-
     if(showBottomSheet == true){
         ModalBottomSheet(onDismissRequest = {  showBottomSheet = false },
             sheetState = sheetState) {//bottom sheet will be closed when clicked outside
@@ -333,7 +305,7 @@ fun MyBottomAppBar() {
                         popUpTo(0)
                     }
                 }
-                
+
                 BottomSheetItem(icon = Icons.Default.Star, title = "Add a story") {
                     Toast.makeText(context, "Add a story", Toast.LENGTH_SHORT).show()
                 }
@@ -347,13 +319,14 @@ fun MyBottomAppBar() {
         }
     }
 }
-
 @Composable
 fun BottomSheetItem(icon: ImageVector, title: String, onClick: () -> Unit){
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxWidth().clickable { onClick() } //on click vali value will be passed here
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() } //on click vali value will be passed here
     ) {
         Icon(imageVector = icon, contentDescription = null, tint = Green1, modifier = Modifier.size(24.dp))
         Text(text = title, fontSize = 22.sp, color = Green1)
